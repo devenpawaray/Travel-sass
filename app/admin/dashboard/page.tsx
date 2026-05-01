@@ -83,7 +83,7 @@ export default function AdminDashboard() {
             {events.map((e) => (
               <div key={e.id} className="flex gap-4 p-2 hover:bg-white/5 group border-b border-white/5 transition-colors">
                 <span className="text-slate-600">[{new Date(e.created_at).toLocaleTimeString()}]</span>
-                <span className="text-indigo-400 font-bold w-40">{e.type}</span>
+                <span className="text-indigo-400 font-bold w-40">{e.event_type}</span>
                 <span className="text-slate-400 truncate flex-1">{JSON.stringify(e.payload)}</span>
                 <span className="text-slate-700 opacity-0 group-hover:opacity-100 transition-opacity uppercase text-[9px] cursor-pointer hover:text-white">Expand</span>
               </div>

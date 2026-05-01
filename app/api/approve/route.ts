@@ -19,7 +19,7 @@ export async function POST(req: Request) {
       .select()
       .single();
 
-    if (importError) throw importError;
+    if (importError || !importRecord) throw importError || new Error('Import record not found');
 
     // 2. Update Approvals Queue
     await supabaseAdmin.from('approvals_queue')
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       .select()
       .single();
 
-    if (invError) throw invError;
+    if (invError || !inventory) throw invError || new Error('Inventory creation failed');
 
     // 4. Emit Event
     await eventService.emitEvent({

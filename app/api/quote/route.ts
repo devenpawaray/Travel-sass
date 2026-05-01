@@ -20,7 +20,7 @@ export async function POST(req: Request) {
       .eq('id', inventory_id)
       .single();
 
-    if (invError) throw invError;
+    if (invError || !inventory) throw invError || new Error('Inventory not found');
 
     const { data: config } = await supabaseAdmin
       .from('system_config')
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
       .select()
       .single();
 
-    if (quoteError) throw quoteError;
+    if (quoteError || !quote) throw quoteError || new Error('Quote creation failed');
 
     // 5. Emit Event
     await eventService.emitEvent({

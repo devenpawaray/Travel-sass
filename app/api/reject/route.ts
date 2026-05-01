@@ -22,7 +22,11 @@ export async function POST(req: Request) {
       .eq('raw_import_id', import_id);
 
     // 3. Emit Event
-    const { data: importRecord } = await supabaseAdmin.from('raw_imports').select('tenant_id').eq('id', import_id).single();
+    const { data: importRecord, error: importRecordError } = await supabaseAdmin.from('raw_imports').select('tenant_id').eq('id', import_id).single();
+
+    if (importRecordError || !importRecord) {
+      return NextResponse.json({ error: 'Import record not found' }, { status: 404 });
+    }
 
     await eventService.emitEvent({
       tenant_id: importRecord.tenant_id,
