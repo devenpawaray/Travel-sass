@@ -11,27 +11,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing import_id or reviewer_id' }, { status: 400 });
     }
 
-    // 1. Update Import Status
-    await supabaseAdmin.from('raw_imports')
-      .update({ status: 'rejected' })
-      .eq('id', import_id);
+    // 1. Update Approval Record
+    const { data: approval, error: approvalError } = await supabaseAdmin
+      .from('approvals')
+      .update({ status: 'rejected', reviewed_by: reviewer_id })
+      .eq('id', import_id)
+      .select()
+      .single();
 
-    // 2. Update Approvals Queue
-    await supabaseAdmin.from('approvals_queue')
-      .update({ status: 'rejected', reviewer_id, notes })
-      .eq('raw_import_id', import_id);
+    if (approvalError || !approval) throw approvalError || new Error('Approval record not found');
 
-    // 3. Emit Event
-    const { data: importRecord, error: importRecordError } = await supabaseAdmin.from('raw_imports').select('tenant_id').eq('id', import_id).single();
-
-    if (importRecordError || !importRecord) {
-      return NextResponse.json({ error: 'Import record not found' }, { status: 404 });
-    }
-
+    // 2. Emit Event
     await eventService.emitEvent({
-      tenant_id: importRecord.tenant_id,
+      tenant_id: approval.tenant_id,
       event_type: EVENT_TYPES.IMPORT_REJECTED,
-      payload: { import_id, reviewer_id, notes }
+      payload: { approval_id: approval.id, reviewer_id, notes }
     });
 
     return NextResponse.json({ success: true });

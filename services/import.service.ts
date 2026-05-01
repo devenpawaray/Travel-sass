@@ -16,17 +16,17 @@ export const importService = {
    */
   async processImport({ tenant_id, source_type, raw_payload }: RawImportData) {
     // Simulate AI parsing (placeholder for actual logic)
-    const parsed_json = { ...raw_payload, _simulated_parsing: true };
-    const confidence_score = 0.95;
+    const ai_data = { ...raw_payload, _simulated_parsing: true };
+    const confidence = 0.95;
 
-    const { data: rawImport, error } = await supabaseAdmin
-      .from('raw_imports')
+    const { data: approval, error } = await supabaseAdmin
+      .from('approvals')
       .insert({
         tenant_id,
         source_type,
-        raw_payload,
-        parsed_json,
-        confidence_score,
+        raw_data: raw_payload,
+        ai_data,
+        confidence,
         status: 'pending'
       })
       .select()
@@ -38,18 +38,9 @@ export const importService = {
     await eventService.emitEvent({
       tenant_id,
       event_type: EVENT_TYPES.RAW_IMPORT_CREATED,
-      payload: rawImport
+      payload: approval
     });
 
-    // Create Approvals Queue record
-    await supabaseAdmin
-      .from('approvals_queue')
-      .insert({
-        tenant_id,
-        raw_import_id: rawImport.id,
-        status: 'pending'
-      });
-
-    return rawImport;
+    return approval;
   }
 };

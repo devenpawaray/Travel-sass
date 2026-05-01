@@ -13,54 +13,42 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing inventory_id or tenant_id' }, { status: 400 });
     }
 
-    // 1. Fetch Inventory & Config
-    const { data: inventory, error: invError } = await supabaseAdmin
-      .from('inventory_master')
-      .select('*, partners(*)')
+    // 1. Fetch System State (Inventory)
+    const { data: state, error: stateError } = await supabaseAdmin
+      .from('system_state')
+      .select('*')
       .eq('id', inventory_id)
       .single();
 
-    if (invError || !inventory) throw invError || new Error('Inventory not found');
+    if (stateError || !state) throw stateError || new Error('System state not found');
 
-    const { data: config } = await supabaseAdmin
-      .from('system_config')
-      .select('*')
-      .eq('tenant_id', tenant_id)
-      .single();
+    // 2. Pricing Calculation (Simplified for MVP)
+    const basePrice = state.data?.price || 0;
+    const marginPercent = 0.12;
+    const totalPrice = basePrice * (1 + marginPercent);
+    const margin = totalPrice - basePrice;
 
-    // 2. Rules Engine Validation
-    const evaluation = rulesEngineService.evaluateQuote(
-      inventory, 
-      inventory.partners || { risk_level: 'medium' }, 
-      config || { min_margin: 10, risk_rules: { high_risk_partners: [] } }
-    );
-
-    if (!evaluation.allowed) {
-      return NextResponse.json({ error: evaluation.reason }, { status: 400 });
-    }
-
-    // 3. Pricing Calculation
-    const { price, profit_margin } = pricingService.calculatePrice(
-      inventory, 
-      config || { min_margin: 10 }
-    );
-
-    // 4. Create Quote
+    // 3. Create Quote (matching schema: customer_name, package_id, status, total_price, margin, snapshot)
     const { data: quote, error: quoteError } = await supabaseAdmin
       .from('quotes')
       .insert({
         tenant_id,
-        inventory_id,
-        price,
-        profit_margin,
-        status: 'created'
+        package_id: state.id,
+        total_price: totalPrice,
+        margin: margin,
+        status: 'created',
+        customer_name: 'Walk-in Customer', // Default for MVP
+        snapshot: {
+          original_state: state,
+          pricing: { basePrice, marginPercent, totalPrice }
+        }
       })
       .select()
       .single();
 
     if (quoteError || !quote) throw quoteError || new Error('Quote creation failed');
 
-    // 5. Emit Event
+    // 4. Emit Event
     await eventService.emitEvent({
       tenant_id,
       event_type: EVENT_TYPES.QUOTE_CREATED,

@@ -11,44 +11,39 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing import_id or reviewer_id' }, { status: 400 });
     }
 
-    // 1. Update Import Status
-    const { data: importRecord, error: importError } = await supabaseAdmin
-      .from('raw_imports')
-      .update({ status: 'approved' })
+    // 1. Update Approval Record
+    const { data: approval, error: approvalError } = await supabaseAdmin
+      .from('approvals')
+      .update({ status: 'approved', reviewed_by: reviewer_id })
       .eq('id', import_id)
       .select()
       .single();
 
-    if (importError || !importRecord) throw importError || new Error('Import record not found');
+    if (approvalError || !approval) throw approvalError || new Error('Approval record not found');
 
-    // 2. Update Approvals Queue
-    await supabaseAdmin.from('approvals_queue')
-      .update({ status: 'approved', reviewer_id })
-      .eq('raw_import_id', import_id);
-
-    // 3. Move to Inventory Master
-    const { data: inventory, error: invError } = await supabaseAdmin
-      .from('inventory_master')
+    // 2. Insert into System State (Inventory)
+    const { data: state, error: stateError } = await supabaseAdmin
+      .from('system_state')
       .insert({
-        tenant_id: importRecord.tenant_id,
-        service_type: importRecord.source_type,
-        base_price: importRecord.parsed_json.price || 0,
-        currency: importRecord.parsed_json.currency || 'USD',
-        status: 'active'
+        tenant_id: approval.tenant_id,
+        service_id: approval.id, // Linking back to the approval that created it
+        state: 'active',
+        data: approval.ai_data,
+        version: 1
       })
       .select()
       .single();
 
-    if (invError || !inventory) throw invError || new Error('Inventory creation failed');
+    if (stateError || !state) throw stateError || new Error('State creation failed');
 
-    // 4. Emit Event
+    // 3. Emit Event
     await eventService.emitEvent({
-      tenant_id: importRecord.tenant_id,
+      tenant_id: approval.tenant_id,
       event_type: EVENT_TYPES.IMPORT_APPROVED,
-      payload: { import_id, inventory_id: inventory.id }
+      payload: { approval_id: approval.id, state_id: state.id }
     });
 
-    return NextResponse.json({ success: true, inventory_id: inventory.id });
+    return NextResponse.json({ success: true, state_id: state.id });
   } catch (error: any) {
     console.error('[API Approve] Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
