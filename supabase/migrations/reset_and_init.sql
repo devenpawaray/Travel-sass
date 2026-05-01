@@ -148,6 +148,30 @@ ALTER TABLE state_snapshots ENABLE ROW LEVEL SECURITY;
 ALTER TABLE service_versions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ads_campaigns ENABLE ROW LEVEL SECURITY;
 
+-- 17. FEATURE FLAGS (SAAS CONTROL)
+CREATE TABLE feature_flags (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id UUID REFERENCES tenants(id),
+  feature_key TEXT NOT NULL,
+  enabled BOOLEAN DEFAULT true,
+  limit_value NUMERIC,
+  updated_at TIMESTAMP DEFAULT now(),
+  UNIQUE(tenant_id, feature_key)
+);
+
+-- 18. TELEMETRY (OBSERVABILITY)
+CREATE TABLE telemetry (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id UUID REFERENCES tenants(id),
+  metric_name TEXT,
+  metric_value NUMERIC,
+  metadata JSONB,
+  created_at TIMESTAMP DEFAULT now()
+);
+
+ALTER TABLE feature_flags ENABLE ROW LEVEL SECURITY;
+ALTER TABLE telemetry ENABLE ROW LEVEL SECURITY;
+
 -- TENANT ISOLATION POLICIES
 CREATE POLICY tenant_isolation_users ON users FOR ALL USING (tenant_id::text = auth.jwt() ->> 'tenant_id');
 CREATE POLICY tenant_isolation_events ON events FOR ALL USING (tenant_id::text = auth.jwt() ->> 'tenant_id');
@@ -162,6 +186,8 @@ CREATE POLICY tenant_isolation_org_config ON org_config FOR ALL USING (tenant_id
 CREATE POLICY tenant_isolation_snapshots ON state_snapshots FOR ALL USING (tenant_id::text = auth.jwt() ->> 'tenant_id');
 CREATE POLICY tenant_isolation_versions ON service_versions FOR ALL USING (tenant_id::text = auth.jwt() ->> 'tenant_id');
 CREATE POLICY tenant_isolation_ads ON ads_campaigns FOR ALL USING (tenant_id::text = auth.jwt() ->> 'tenant_id');
+CREATE POLICY tenant_isolation_flags ON feature_flags FOR ALL USING (tenant_id::text = auth.jwt() ->> 'tenant_id');
+CREATE POLICY tenant_isolation_telemetry ON telemetry FOR ALL USING (tenant_id::text = auth.jwt() ->> 'tenant_id');
 
 -- Restore permissions for service_role
 GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
