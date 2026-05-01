@@ -75,7 +75,7 @@ CREATE TABLE approvals (
   created_at TIMESTAMP DEFAULT now()
 );
 
--- 9. AUDIT LOG
+-- 9. AUDIT LOG (IMMUTABLE)
 CREATE TABLE audit_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID REFERENCES tenants(id),
@@ -84,6 +84,8 @@ CREATE TABLE audit_logs (
   entity_id UUID,
   before JSONB,
   after JSONB,
+  previous_hash TEXT,
+  current_hash TEXT,
   created_at TIMESTAMP DEFAULT now()
 );
 
@@ -140,38 +142,26 @@ ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE approvals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE alerts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE partners ENABLE ROW LEVEL SECURITY;
+ALTER TABLE org_config ENABLE ROW LEVEL SECURITY;
 ALTER TABLE state_snapshots ENABLE ROW LEVEL SECURITY;
-
--- 15. SERVICE VERSIONS (EXPLICIT HISTORY)
-CREATE TABLE service_versions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID REFERENCES tenants(id),
-  service_id UUID REFERENCES system_state(id),
-  price NUMERIC,
-  currency TEXT,
-  source_hash TEXT,
-  valid_from TIMESTAMP DEFAULT now(),
-  valid_to TIMESTAMP,
-  created_at TIMESTAMP DEFAULT now()
-);
-
--- 16. ADS & MARKETING ENGINE
-CREATE TABLE ads_campaigns (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID REFERENCES tenants(id),
-  service_id UUID REFERENCES system_state(id),
-  platform TEXT, -- facebook | instagram | whatsapp
-  status TEXT, -- active | paused | completed
-  budget NUMERIC,
-  performance_metrics JSONB,
-  created_at TIMESTAMP DEFAULT now()
-);
-
 ALTER TABLE service_versions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ads_campaigns ENABLE ROW LEVEL SECURITY;
 
--- Note: In a real app, policies would use (tenant_id = (select tenant_id from users where id = auth.uid()))
--- For MVP, we'll keep it simple or use service_role for system actions.
+-- TENANT ISOLATION POLICIES
+CREATE POLICY tenant_isolation_users ON users FOR ALL USING (tenant_id::text = auth.jwt() ->> 'tenant_id');
+CREATE POLICY tenant_isolation_events ON events FOR ALL USING (tenant_id::text = auth.jwt() ->> 'tenant_id');
+CREATE POLICY tenant_isolation_system_state ON system_state FOR ALL USING (tenant_id::text = auth.jwt() ->> 'tenant_id');
+CREATE POLICY tenant_isolation_quotes ON quotes FOR ALL USING (tenant_id::text = auth.jwt() ->> 'tenant_id');
+CREATE POLICY tenant_isolation_bookings ON bookings FOR ALL USING (tenant_id::text = auth.jwt() ->> 'tenant_id');
+CREATE POLICY tenant_isolation_approvals ON approvals FOR ALL USING (tenant_id::text = auth.jwt() ->> 'tenant_id');
+CREATE POLICY tenant_isolation_audit_logs ON audit_logs FOR ALL USING (tenant_id::text = auth.jwt() ->> 'tenant_id');
+CREATE POLICY tenant_isolation_alerts ON alerts FOR ALL USING (tenant_id::text = auth.jwt() ->> 'tenant_id');
+CREATE POLICY tenant_isolation_partners ON partners FOR ALL USING (tenant_id::text = auth.jwt() ->> 'tenant_id');
+CREATE POLICY tenant_isolation_org_config ON org_config FOR ALL USING (tenant_id::text = auth.jwt() ->> 'tenant_id');
+CREATE POLICY tenant_isolation_snapshots ON state_snapshots FOR ALL USING (tenant_id::text = auth.jwt() ->> 'tenant_id');
+CREATE POLICY tenant_isolation_versions ON service_versions FOR ALL USING (tenant_id::text = auth.jwt() ->> 'tenant_id');
+CREATE POLICY tenant_isolation_ads ON ads_campaigns FOR ALL USING (tenant_id::text = auth.jwt() ->> 'tenant_id');
 
 -- Restore permissions for service_role
 GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
