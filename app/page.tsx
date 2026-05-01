@@ -14,25 +14,55 @@ export default function Home() {
         </h1>
       </div>
 
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
+      <div className="mb-32 grid text-center lg:max-w-6xl lg:w-full lg:mb-0 lg:grid-cols-3 lg:text-left gap-6">
         <a
           href="/admin/dashboard"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100"
+          className="group rounded-lg border border-slate-200 px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100"
         >
           <h2 className={`mb-3 text-2xl font-semibold`}>
-            Admin{" "}
+            Admin Control{" "}
             <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
               -&gt;
             </span>
           </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Manage configuration, events, and the kill switch.
+          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-slate-500`}>
+            System health, mission logs, and operational governance.
+          </p>
+        </a>
+
+        <a
+          href="/admin/config"
+          className="group rounded-lg border border-slate-200 px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100"
+        >
+          <h2 className={`mb-3 text-2xl font-semibold`}>
+            Constitution{" "}
+            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
+              -&gt;
+            </span>
+          </h2>
+          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-slate-500`}>
+            Manage global rules, margins, and system thresholds.
+          </p>
+        </a>
+
+        <a
+          href="/secretary/approvals"
+          className="group rounded-lg border border-slate-200 px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100"
+        >
+          <h2 className={`mb-3 text-2xl font-semibold`}>
+            Validation{" "}
+            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
+              -&gt;
+            </span>
+          </h2>
+          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-slate-500`}>
+            Human-in-the-loop verification gateway.
           </p>
         </a>
 
         <a
           href="/consultant/inventory"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100"
+          className="group rounded-lg border border-slate-200 px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100"
         >
           <h2 className={`mb-3 text-2xl font-semibold`}>
             Consultant{" "}
@@ -40,29 +70,29 @@ export default function Home() {
               -&gt;
             </span>
           </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Browse inventory and generate quotes.
+          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-slate-500`}>
+            Pricing matrix and strategic quote engine.
           </p>
         </a>
 
         <a
-          href="/secretary/approvals"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100"
+          href="/accountant/ledger"
+          className="group rounded-lg border border-slate-200 px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100"
         >
           <h2 className={`mb-3 text-2xl font-semibold`}>
-            Secretary{" "}
+            Ledger{" "}
             <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
               -&gt;
             </span>
           </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Review and approve raw data imports.
+          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-slate-500`}>
+            Financial profit tracking and immutable ledger.
           </p>
         </a>
 
         <a
           href="/audit/logs"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100"
+          className="group rounded-lg border border-slate-200 px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100"
         >
           <h2 className={`mb-3 text-2xl font-semibold`}>
             Audit{" "}
@@ -70,8 +100,8 @@ export default function Home() {
               -&gt;
             </span>
           </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            View immutable system logs and snapshots.
+          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-slate-500`}>
+            Review system-wide event sourcing logs.
           </p>
         </a>
       </div>

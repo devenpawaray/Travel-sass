@@ -98,7 +98,40 @@ CREATE TABLE alerts (
   created_at TIMESTAMP DEFAULT now()
 );
 
--- 11. SECURITY (RLS)
+-- 11. PARTNERS
+CREATE TABLE partners (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id UUID REFERENCES tenants(id),
+  name TEXT NOT NULL,
+  type TEXT, -- hotel | airline | ground
+  risk_level TEXT DEFAULT 'medium',
+  contact_info JSONB,
+  created_at TIMESTAMP DEFAULT now()
+);
+
+-- 12. GLOBAL CONFIG (SYSTEM CONSTITUTION)
+CREATE TABLE org_config (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id UUID REFERENCES tenants(id) UNIQUE,
+  commission_rules JSONB DEFAULT '{"hotels": 0.12, "flights": 0.05, "packages": 0.15}',
+  alert_rules JSONB,
+  timing_rules JSONB,
+  risk_rules JSONB,
+  kill_switch_active BOOLEAN DEFAULT false,
+  updated_at TIMESTAMP DEFAULT now()
+);
+
+-- 13. STATE SNAPSHOTS
+CREATE TABLE state_snapshots (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id UUID REFERENCES tenants(id),
+  entity_type TEXT,
+  entity_id UUID,
+  state JSONB,
+  created_at TIMESTAMP DEFAULT now()
+);
+
+-- 14. SECURITY (RLS)
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE system_state ENABLE ROW LEVEL SECURITY;
@@ -107,6 +140,9 @@ ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE approvals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE alerts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE partners ENABLE ROW LEVEL SECURITY;
+ALTER TABLE org_config ENABLE ROW LEVEL SECURITY;
+ALTER TABLE state_snapshots ENABLE ROW LEVEL SECURITY;
 
 -- Note: In a real app, policies would use (tenant_id = (select tenant_id from users where id = auth.uid()))
 -- For MVP, we'll keep it simple or use service_role for system actions.
