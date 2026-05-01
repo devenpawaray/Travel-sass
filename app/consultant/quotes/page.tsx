@@ -42,10 +42,10 @@ export default function QuotesPage() {
   const selectedItem = states.find(s => s.id === selectedId);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-slate-300 font-mono text-sm p-8">
+    <div className="min-h-screen bg-white text-slate-700 font-mono text-sm p-8">
       <div className="max-w-7xl mx-auto">
         <header className="mb-12 border-b border-white/5 pb-8">
-          <h1 className="text-2xl font-black text-white uppercase tracking-tighter">Strategic Quote Engine</h1>
+          <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Strategic Quote Engine</h1>
           <p className="text-slate-500 uppercase text-[10px] tracking-widest mt-2">Mode: SYSTEM_STATE_READ_ENABLED</p>
         </header>
 
@@ -57,11 +57,11 @@ export default function QuotesPage() {
               <div 
                 key={item.id} 
                 onClick={() => setSelectedId(item.id)}
-                className={`p-4 rounded-lg border transition-all cursor-pointer ${selectedId === item.id ? 'bg-indigo-500/20 border-indigo-500' : 'bg-[#0f0f12] border-[#222] hover:border-slate-700'}`}
+                className={`p-4 rounded-lg border transition-all cursor-pointer ${selectedId === item.id ? 'bg-indigo-50 border-indigo-500' : 'bg-white border-slate-200 hover:border-slate-400'}`}
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="text-white font-bold">{item.data?.hotel || 'Travel Package'}</p>
+                    <p className="text-slate-900 font-bold">{item.data?.hotel || 'Travel Package'}</p>
                     <p className="text-[10px] text-slate-500 mt-1">STATE: <span className="text-emerald-500 uppercase">{item.state}</span></p>
                   </div>
                   <p className="text-emerald-400 font-bold">{item.data?.price} {item.data?.currency}</p>
@@ -72,8 +72,8 @@ export default function QuotesPage() {
 
           {/* QUOTE PREVIEW */}
           <div className="col-span-7">
-            <div className="bg-[#0f0f12] border border-[#222] rounded-xl overflow-hidden min-h-[500px] flex flex-col">
-              <div className="p-4 bg-white/5 border-b border-[#222] flex justify-between items-center">
+            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden min-h-[500px] flex flex-col">
+              <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pricing Matrix</span>
                 <span className="text-[10px] text-emerald-500 font-mono">STATUS: SYNCHRONIZED</span>
               </div>
@@ -99,7 +99,7 @@ export default function QuotesPage() {
                       <div className="space-y-6">
                         <div>
                           <label className="text-[9px] text-slate-600 uppercase block mb-1">Customer Quote Total</label>
-                          <p className="text-3xl text-white font-black">
+                          <p className="text-3xl text-slate-900 font-black">
                             {(selectedItem?.data?.price * 1.12).toFixed(2)} {selectedItem?.data?.currency}
                           </p>
                         </div>
@@ -112,7 +112,7 @@ export default function QuotesPage() {
                       </div>
                     </div>
 
-                    <div className="bg-black/40 border border-[#222] rounded p-4 font-mono text-[10px] text-slate-600">
+                    <div className="bg-slate-50 border border-slate-200 rounded p-4 font-mono text-[10px] text-slate-500">
                       <p>WIRING CHECK...</p>
                       <p className="text-emerald-900 font-bold">✓ TENANT_ISOLATION_PASS</p>
                       <p className="text-emerald-900 font-bold">✓ STATE_CONSISTENCY_PASS</p>
@@ -130,10 +130,10 @@ export default function QuotesPage() {
 
                 {quote && (
                   <div className="mt-8 border-t border-[#222] pt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="flex justify-between items-center bg-indigo-500/10 border border-indigo-500/30 p-6 rounded-lg">
+                    <div className="flex justify-between items-center bg-indigo-50 border border-indigo-100 p-6 rounded-lg">
                       <div>
                         <p className="text-[9px] text-indigo-400 uppercase font-bold tracking-widest">Quote Finalized</p>
-                        <p className="text-xl text-white font-mono mt-1">ID: {quote.id.slice(0, 12)}</p>
+                        <p className="text-xl text-slate-900 font-mono mt-1">ID: {quote.id.slice(0, 12)}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-[9px] text-slate-500 uppercase tracking-widest">Status</p>

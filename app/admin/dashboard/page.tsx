@@ -40,13 +40,13 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-[#d1d1d1] font-mono text-sm p-4">
+    <div className="min-h-screen bg-white text-slate-900 font-mono text-sm p-4">
       {/* SYSTEM STATUS BAR */}
-      <div className="flex items-center justify-between border-b border-[#222] pb-4 mb-6 bg-[#0f0f12] p-4 rounded-lg">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-4 mb-6 bg-slate-50 p-4 rounded-lg">
         <div className="flex gap-8">
           <div className="flex flex-col">
             <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Active Events</span>
-            <span className="text-xl font-bold text-white">{events.length}</span>
+            <span className="text-xl font-bold text-slate-900">{events.length}</span>
           </div>
           <div className="flex flex-col">
             <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">System Alerts</span>
@@ -71,9 +71,9 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-12 gap-6">
         {/* EVENT STREAM (Left) */}
-        <div className="col-span-8 bg-[#0f0f12] border border-[#222] rounded-lg overflow-hidden flex flex-col h-[700px]">
-          <div className="p-3 border-b border-[#222] flex justify-between items-center bg-[#141418]">
-            <h2 className="uppercase font-black text-xs tracking-widest text-slate-400">Live Mission Logs</h2>
+        <div className="col-span-8 bg-white border border-slate-200 rounded-lg overflow-hidden flex flex-col h-[700px]">
+          <div className="p-3 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+            <h2 className="uppercase font-black text-xs tracking-widest text-slate-500">Live Mission Logs</h2>
             <div className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping"></span>
               <span className="text-[10px] text-slate-600">CONNECTED</span>
@@ -81,11 +81,11 @@ export default function AdminDashboard() {
           </div>
           <div className="flex-1 overflow-y-auto font-mono text-[11px] p-2 space-y-1">
             {events.map((e) => (
-              <div key={e.id} className="flex gap-4 p-2 hover:bg-white/5 group border-b border-white/5 transition-colors">
-                <span className="text-slate-600">[{new Date(e.created_at).toLocaleTimeString()}]</span>
+              <div key={e.id} className="flex gap-4 p-2 hover:bg-slate-50 group border-b border-slate-100 transition-colors">
+                <span className="text-slate-400">[{new Date(e.created_at).toLocaleTimeString()}]</span>
                 <span className="text-indigo-400 font-bold w-40">{e.event_type}</span>
-                <span className="text-slate-400 truncate flex-1">{JSON.stringify(e.payload)}</span>
-                <span className="text-slate-700 opacity-0 group-hover:opacity-100 transition-opacity uppercase text-[9px] cursor-pointer hover:text-white">Expand</span>
+                <span className="text-slate-600 truncate flex-1">{JSON.stringify(e.payload)}</span>
+                <span className="text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity uppercase text-[9px] cursor-pointer hover:text-indigo-600">Expand</span>
               </div>
             ))}
           </div>
@@ -93,8 +93,8 @@ export default function AdminDashboard() {
 
         {/* METRICS & ALERTS (Right) */}
         <div className="col-span-4 space-y-6">
-          <div className="bg-[#0f0f12] border border-[#222] rounded-lg p-4 h-[400px] flex flex-col">
-            <h2 className="uppercase font-black text-xs tracking-widest text-slate-400 mb-4">Intelligence Alerts</h2>
+          <div className="bg-white border border-slate-200 rounded-lg p-4 h-[400px] flex flex-col">
+            <h2 className="uppercase font-black text-xs tracking-widest text-slate-500 mb-4">Intelligence Alerts</h2>
             <div className="space-y-3 overflow-y-auto flex-1">
               {alerts.length === 0 ? (
                 <p className="text-slate-700 italic text-center py-10">No active alerts.</p>
@@ -109,8 +109,8 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="bg-[#0f0f12] border border-[#222] rounded-lg p-4">
-            <h2 className="uppercase font-black text-xs tracking-widest text-slate-400 mb-4">Commercial Pulse</h2>
+          <div className="bg-white border border-slate-200 rounded-lg p-4">
+            <h2 className="uppercase font-black text-xs tracking-widest text-slate-500 mb-4">Commercial Pulse</h2>
             <div className="space-y-6">
               <div>
                 <div className="flex justify-between text-[10px] mb-1">
