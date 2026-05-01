@@ -1,0 +1,524 @@
+BUILD SEQUENCE (MVP IMPLEMENTATION ORDER)** designed specifically for a coding agent.
+
+This is the *execution roadmap*, not architecture theory.
+
+It tells the agent **exactly what to build, in what order, and why**, so it doesn’t drift.
+
+---
+
+# 🚀 TRAVEL SAAS MVP — BUILD SEQUENCE (CODING AGENT GUIDE)
+
+---
+
+# ⚠️ GLOBAL RULES BEFORE START
+
+The agent must follow:
+
+* Backend-first development
+* Database schema first, then logic, then API, then UI
+* No UI logic for business rules
+* Every mutation must go through events
+* Every financial action must be auditable
+
+---
+
+# 🧱 PHASE 1 — FOUNDATION (DATABASE + AUTH)
+
+## 🎯 Goal:
+
+Create a working multi-tenant system skeleton.
+
+---
+
+## 1.1 Supabase Setup
+
+Create project with:
+
+* Auth enabled
+* PostgreSQL enabled
+* Realtime enabled (optional for later)
+
+---
+
+## 1.2 DATABASE MIGRATION (FIRST TASK)
+
+Create tables in this exact order:
+
+### Core Identity
+
+1. tenants
+2. users
+
+### Configuration Layer
+
+3. system_config
+
+### Business Entities
+
+4. partners
+5. inventory_master
+
+### Ingestion Layer
+
+6. raw_imports
+7. approvals_queue
+
+### Transaction Layer
+
+8. quotes
+9. bookings
+
+### System Layer
+
+10. events
+11. audit_logs
+
+---
+
+## 🧠 RULE:
+
+No API or UI before schema is complete.
+
+---
+
+# ⚙️ PHASE 2 — AUTH + ROLE SYSTEM (RBAC)
+
+## 🎯 Goal:
+
+Enforce multi-tenant + role isolation.
+
+---
+
+## 2.1 Implement Supabase Auth
+
+Users must:
+
+* belong to a tenant_id
+* have role field:
+
+  * admin
+  * consultant
+  * secretary
+  * accountant
+
+---
+
+## 2.2 Middleware (CRITICAL)
+
+Create server middleware:
+
+### Must enforce:
+
+* tenant isolation
+* role validation
+* request ownership scope
+
+---
+
+## OUTPUT:
+
+No API route can execute without:
+
+* valid user
+* tenant context
+
+---
+
+# 🧩 PHASE 3 — EVENT SYSTEM (CORE ENGINE)
+
+## 🎯 Goal:
+
+Everything becomes traceable events.
+
+---
+
+## 3.1 Create event logger function
+
+```ts
+createEvent({
+  tenant_id,
+  event_type,
+  payload
+})
+```
+
+---
+
+## 3.2 Every mutation MUST call:
+
+* event insert
+* audit log (if financial or state change)
+
+---
+
+## 3.3 Standard events to implement:
+
+* RAW_IMPORT_CREATED
+* IMPORT_APPROVED
+* INVENTORY_CREATED
+* QUOTE_CREATED
+* QUOTE_LOCKED
+* BOOKING_CONFIRMED
+* KILL_SWITCH_TRIGGERED
+
+---
+
+## 🧠 RULE:
+
+No DB update without event log.
+
+---
+
+# 🧠 PHASE 4 — STATE MACHINE ENGINE (BOOKING FLOW)
+
+## 🎯 Goal:
+
+Prevent illegal transitions.
+
+---
+
+## 4.1 Define allowed transitions:
+
+```text
+QUOTE_CREATED
+→ PRICE_LOCKED
+→ PAYMENT_PENDING
+→ PAYMENT_VERIFIED
+→ BOOKING_CONFIRMED
+```
+
+---
+
+## 4.2 Build validator:
+
+```ts
+validateStateTransition(current, next)
+```
+
+Reject invalid transitions.
+
+---
+
+## 4.3 Enforce at API level
+
+Every booking update must:
+
+* check current state
+* validate transition
+* emit event
+* update DB
+
+---
+
+# 📥 PHASE 5 — IMPORT SYSTEM (RAW DATA → STRUCTURED DATA)
+
+## 🎯 Goal:
+
+Simulate AI ingestion pipeline.
+
+---
+
+## 5.1 Create API:
+
+`POST /api/import`
+
+Input:
+
+* raw travel data (mock allowed)
+
+---
+
+## 5.2 Processing flow:
+
+1. store in `raw_imports`
+2. simulate AI parsing → parsed_json
+3. set status = pending
+4. send to approvals_queue
+
+---
+
+## 🧠 RULE:
+
+Nothing enters inventory without approval.
+
+---
+
+# 🧑‍💼 PHASE 6 — APPROVAL SYSTEM (SECRETARY GATE)
+
+## 🎯 Goal:
+
+Human validation layer before system truth.
+
+---
+
+## 6.1 API endpoints:
+
+* GET /approvals
+* POST /approve
+* POST /reject
+
+---
+
+## 6.2 On APPROVE:
+
+* move data → inventory_master
+* emit event: IMPORT_APPROVED
+* create versioned inventory record
+
+---
+
+## 🧠 RULE:
+
+Approval = system truth creation moment.
+
+---
+
+# 🧾 PHASE 7 — INVENTORY SYSTEM
+
+## 🎯 Goal:
+
+Create usable travel inventory.
+
+---
+
+## 7.1 Inventory structure:
+
+* service type
+* partner
+* price
+* status (draft/active/locked)
+* version
+
+---
+
+## 7.2 Rules:
+
+* only approved imports can create inventory
+* inventory is versioned (never overwritten)
+
+---
+
+# 💰 PHASE 8 — PRICING ENGINE (RULE SYSTEM)
+
+## 🎯 Goal:
+
+Enforce profit safety before quotes.
+
+---
+
+## 8.1 Implement rules:
+
+* Commission 2 rules (from system_config)
+* partner risk rules
+* margin threshold rules
+
+---
+
+## 8.2 Quote generation flow:
+
+1. consultant selects inventory
+2. system applies rules
+3. if valid → create quote
+4. else → block or require admin approval
+
+---
+
+## 🧠 RULE:
+
+No quote bypasses rules engine.
+
+---
+
+# 📦 PHASE 9 — QUOTE SYSTEM
+
+## 🎯 Goal:
+
+Controlled pricing output system.
+
+---
+
+## 9.1 API:
+
+`POST /quote`
+
+Inputs:
+
+* inventory_id
+* client data
+
+---
+
+## 9.2 Output:
+
+* price
+* margin
+* status
+* locked/unlocked
+
+---
+
+## 9.3 Event:
+
+QUOTE_CREATED must always fire
+
+---
+
+# 🧾 PHASE 10 — BOOKING SYSTEM
+
+## 🎯 Goal:
+
+Finalize transactions safely.
+
+---
+
+## 10.1 Flow:
+
+Quote → Booking → Payment → Confirmation
+
+---
+
+## 10.2 Rules:
+
+* only locked quotes can be booked
+* booking triggers state machine
+* confirmation triggers audit snapshot
+
+---
+
+# 🔒 PHASE 11 — KILL SWITCH SYSTEM
+
+## 🎯 Goal:
+
+Emergency system freeze.
+
+---
+
+## 11.1 Admin function:
+
+`POST /kill-switch`
+
+---
+
+## 11.2 Effect:
+
+* freeze quotes
+* block bookings
+* lock inventory
+* emit KILL_SWITCH_TRIGGERED event
+
+---
+
+# 📊 PHASE 12 — AUDIT SYSTEM (IMMUTABILITY LAYER)
+
+## 🎯 Goal:
+
+Full traceability.
+
+---
+
+## 12.1 Every confirmed booking must generate:
+
+* snapshot of:
+
+  * price
+  * partner
+  * commission
+  * currency
+  * state chain
+
+---
+
+## 12.2 Store in audit_logs
+
+No modification allowed.
+
+---
+
+# 🧑‍💼 PHASE 13 — FRONTEND (MINIMAL UI ONLY)
+
+## 🎯 Goal:
+
+Operational interface only.
+
+---
+
+## 13.1 Admin Panel
+
+* config editor
+* kill switch button
+* event viewer
+
+---
+
+## 13.2 Consultant Dashboard
+
+* inventory list
+* quote generator
+* booking status
+
+---
+
+## 13.3 Secretary Panel
+
+* approval queue
+* raw vs parsed comparison
+
+---
+
+## 13.4 Audit View
+
+* timeline of events
+* booking history
+
+---
+
+# 🔁 PHASE 14 — EVENT SYSTEM FINAL HOOKUP
+
+Ensure:
+
+Every action triggers:
+
+* event insert
+* optional audit log
+* optional notification
+
+---
+
+# 🧠 FINAL BUILD ORDER SUMMARY
+
+## MUST FOLLOW EXACT ORDER:
+
+1. Database schema
+2. Auth + RBAC
+3. Event system
+4. State machine engine
+5. Import pipeline
+6. Approval system
+7. Inventory system
+8. Pricing rules engine
+9. Quote system
+10. Booking system
+11. Kill switch
+12. Audit system
+13. UI (minimal)
+14. Event wiring final pass
+
+---
+
+# 🚨 FINAL INSTRUCTION TO CODING AGENT
+
+> Do not build features independently. Every feature must integrate into:
+>
+> * event system
+> * state machine
+> * audit layer
+>
+> This is a financial execution system, not a CRUD app.
+
+---
+
+If you want next step, I can give you:
+
+### 🔥 “Exact folder structure + API route map + Supabase SQL migrations”
+
+That’s the final step before actual coding starts.
