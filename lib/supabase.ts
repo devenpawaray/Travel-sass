@@ -10,8 +10,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');
 
-// Service role client for backend operations
-export const supabaseAdmin = createClient(
-  supabaseUrl || '',
-  supabaseServiceKey || ''
-);
+// Service role client for backend operations - ONLY initialized on server
+export const supabaseAdmin = typeof window === 'undefined' 
+  ? createClient(supabaseUrl || '', supabaseServiceKey || '')
+  : null as any;
