@@ -140,9 +140,35 @@ ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE approvals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE alerts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE partners ENABLE ROW LEVEL SECURITY;
-ALTER TABLE org_config ENABLE ROW LEVEL SECURITY;
 ALTER TABLE state_snapshots ENABLE ROW LEVEL SECURITY;
+
+-- 15. SERVICE VERSIONS (EXPLICIT HISTORY)
+CREATE TABLE service_versions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id UUID REFERENCES tenants(id),
+  service_id UUID REFERENCES system_state(id),
+  price NUMERIC,
+  currency TEXT,
+  source_hash TEXT,
+  valid_from TIMESTAMP DEFAULT now(),
+  valid_to TIMESTAMP,
+  created_at TIMESTAMP DEFAULT now()
+);
+
+-- 16. ADS & MARKETING ENGINE
+CREATE TABLE ads_campaigns (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id UUID REFERENCES tenants(id),
+  service_id UUID REFERENCES system_state(id),
+  platform TEXT, -- facebook | instagram | whatsapp
+  status TEXT, -- active | paused | completed
+  budget NUMERIC,
+  performance_metrics JSONB,
+  created_at TIMESTAMP DEFAULT now()
+);
+
+ALTER TABLE service_versions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ads_campaigns ENABLE ROW LEVEL SECURITY;
 
 -- Note: In a real app, policies would use (tenant_id = (select tenant_id from users where id = auth.uid()))
 -- For MVP, we'll keep it simple or use service_role for system actions.
